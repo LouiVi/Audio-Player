@@ -2,7 +2,7 @@ cfg.Light, cfg.Portrait, cfg.Share, cfg.MUI;
 app.LoadPlugin( "GifViewer" );
 app.LoadPlugin( "DsNav" );
 app.LoadPlugin( "Utils" );
-
+var Uri = new Array();
 var  dur1 = 0, repeat = true;
 
 //Create an action bar at the top.
@@ -88,7 +88,7 @@ gifFile = 'Misc/music';
   gifView = gif.CreateGifImage( null , 0.9, 0.4 );
   //lay.AddChild( gifView );
 	//Create music list.
-	spin = app.CreateSpinner( "-- Choose the Song --,Alexio La Bestia - Te vas a morir tu,Almighty - Invictux,BAD_BUNNY_-_TU_NO_METES_CABRA_Video_Oficial");//[No tracks found]" )
+	spin = app.CreateSpinner( "");//-- Choose the Song --,Alexio La Bestia - Te vas a morir tu,Almighty - Invictux,BAD_BUNNY_-_TU_NO_METES_CABRA_Video_Oficial");//[No tracks found]" )
 	//Almighty - Invictux (Tiraera 2) Rip El Sica [Official Audio].mp3
 	spin.SetSize( 1.0, -1 );
 	spin.SetTextColor( "#348e34" );
@@ -156,10 +156,10 @@ gifFile = 'Misc/music';
 	
 	//Find mp3 files on internal sdcard .
 	mp3List = app.ListFolder( "/storage/emulated/0/Download/TeraBox/Download/Music", ".mp3" )
-	spin.SetList( mp3List )
+	//spin.SetList( mp3List )
 	
 	//Load the first file found.
-	player.SetFile( "/storage/emulated/0/Download/TeraBox/Download/Music/Almighty - Invictux (Tiraera 2) Rip El Sica [Official Audio].mp3");//Alexio La Bestia - Te Vas A Morir Tu [Official Audio].mp3" );// + spin.GetText() )
+	//player.SetFile( "/storage/emulated/0/Download/TeraBox/Download/Music/Almighty - Invictux (Tiraera 2) Rip El Sica [Official Audio].mp3");//Alexio La Bestia - Te Vas A Morir Tu [Official Audio].mp3" );// + spin.GetText() )
 	dur = null;
 	
 	//Start timer to update seek bar every second.
@@ -170,8 +170,38 @@ gifFile = 'Misc/music';
   gifView.OnAnimationComplete( repeatCheck );
   setSpeed("Normal");
   gifView.Play();
+   //Create media store and set callbacks.
+    media = app.CreateMediaStore()
+    media.SetOnMediaResult( media_OnMediaResult )
+ app.ShowProgress( "Searching..." )
+    media.QueryMedia( "", "artist,album", "external" )
 }
 
+//Show media query results.
+function media_OnMediaResult( result )
+{
+    var s = "", t = "";
+    for( var i=0; i<result.length; i++ )
+    {
+        var item = result[i];
+
+        s += item.title+", "+item.albumId+", "+item.album
+            +", "+item.artistId+", "+ item.artist+
+            ", "+ Math.round(item.duration/1000)+"s" +
+            ", "+ Math.round(item.size/1000)+"KB" + 
+            ", "+ item.uri +"\n\n";
+            t += item.title + ",";
+            Uri[i]=item.uri;
+    }
+    
+    spin.SetList( t )
+    app.HideProgress()
+    //alert( s.substr(0,2048) )
+    
+    //Play first file found.
+    if( result.length > 0 )
+        player.SetFile( result[0].uri )
+}
 function comp()
 {
 video.Play();
@@ -204,15 +234,16 @@ player_OnReady();
 }
 
 //Handle file select.
-function spn_OnTouch( item )
+function spn_OnTouch( item, index)
 {
 	//player.SetFile( "/sdcard/music/" + item );
-	
+	/*
 	if(item=="Almighty - Invictux") {
 	player.SetFile( "/storage/emulated/0/Download/TeraBox/Download/Music/Almighty - Invictux (Tiraera 2) Rip El Sica [Official Audio].mp3");
 	}else{
 	player.SetFile( "/storage/emulated/0/Download/TeraBox/Download/Music/Alexio La Bestia - Te Vas A Morir Tu [Official Audio].mp3");
-	}
+	}*/
+	player.SetFile( Uri[index] );
 }
 
 //Handle 'Play' button.
